@@ -676,6 +676,7 @@ void add_entry (char *key, char *value)
 		}
 	}
 	else if (strcmp(key, "battery") == 0) {
+#ifdef BATTERY_ENABLED
 		if (new_config_file == 0) {
 			battery_enabled = atoi(value);
 			if (battery_enabled) {
@@ -688,6 +689,9 @@ void add_entry (char *key, char *value)
 					panel_items_order = g_strdup("B");
 			}
 		}
+#else
+    fprintf(stderr, "Invalid option. tint2 built without battery support\n");
+#endif
 	}
 	else
 		fprintf(stderr, "tint2 : invalid option \"%s\",\n  upgrade tint2 or correct your config file\n", key);
