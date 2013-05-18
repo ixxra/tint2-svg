@@ -30,6 +30,10 @@
 #include <libsn/sn.h>
 #endif
 
+#ifdef HAVE_RSVG
+#include <librsvg/rsvg.h>
+#endif
+
 #include "window.h"
 #include "server.h"
 #include "area.h"
@@ -297,6 +301,26 @@ const char* launcher_icon_get_tooltip_text(void *obj)
 void draw_launcher_icon(void *obj, cairo_t *c)
 {
 	LauncherIcon *launcherIcon = (LauncherIcon*)obj;
+
+#ifdef HAVE_RSVG
+    const char* icon_path = launcherIcon->icon_path;
+    if (g_str_has_suffix(icon_path, ".svg")) {
+        fprintf(stderr, "launcher.c %d: Rendering svg image %s\n", __LINE__, icon_path);
+        GError* err = NULL;
+        RsvgHandle* image = rsvg_handle_new_from_file(icon_path, &err);
+
+        if (err != NULL) {
+            fprintf(stderr, "Could not load image!: %s", err->message);
+            g_error_free(err);
+            return;
+        }
+
+        rsvg_handle_render_cairo(image, c);
+        g_object_unref(G_OBJECT(image));
+        return;
+    }
+#endif //HAVE_RSVG
+
 	Imlib_Image icon_scaled = launcherIcon->icon_scaled;
 	// Render
 	imlib_context_set_image (icon_scaled);
@@ -927,6 +951,7 @@ char *icon_path(Launcher *launcher, const char *icon_name, int size)
 	GSList *extensions = NULL;
 	extensions = g_slist_append(extensions, ".png");
 	extensions = g_slist_append(extensions, ".xpm");
+	extensions = g_slist_append(extensions, ".svg");
 	// if the icon name already contains one of the extensions (e.g. vlc.png instead of vlc) add a special entry
 	GSList *ext;
 	for (ext = extensions; ext; ext = g_slist_next(ext)) {

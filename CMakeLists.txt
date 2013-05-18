@@ -11,6 +11,7 @@ pkg_check_modules( GLIB2 REQUIRED glib-2.0 )
 pkg_check_modules( GOBJECT2 REQUIRED gobject-2.0 )
 pkg_check_modules( IMLIB2 REQUIRED imlib2>=1.4.2 )
 pkg_check_modules( SN libstartup-notification-1.0>=0.12 )
+pkg_check_modules( RSVG librsvg-2.0>=2.36.0 )
 find_library( RT_LIBRARY rt )
 
 if( NOT X11_FOUND OR NOT PANGOCAIRO_FOUND OR NOT PANGO_FOUND OR NOT CAIRO_FOUND OR NOT GLIB2_FOUND OR NOT GOBJECT2_FOUND OR NOT IMLIB2_FOUND )
@@ -40,7 +41,8 @@ include_directories( ${PROJECT_BINARY_DIR}
                      ${GLIB2_INCLUDE_DIRS}
                      ${GOBJECT2_INCLUDE_DIRS}
                      ${IMLIB2_INCLUDE_DIRS}
-		     ${SN_INCLUDE_DIRS} )
+		             ${SN_INCLUDE_DIRS}
+                     ${RSVG_INCLUDE_DIRS} )
 
 set( SOURCES src/config.c
              src/panel.c
@@ -64,11 +66,19 @@ option( ENABLE_BATTERY "Enable battery status plugin" ON )
 option( ENABLE_TINT2CONF "Enable tint2conf build, a GTK+2 theme switcher for tint2" ON )
 option( ENABLE_EXAMPLES "Install additional tin2rc examples" OFF )
 option( ENABLE_SN "Startup notification support" ON )
+option( ENABLE_RSVG "Rsvg support (launcher only)" ON )
+
 if( ENABLE_SN )
   if( SN_FOUND )
     add_definitions( -DHAVE_SN -DSN_API_NOT_YET_FROZEN )
   endif( SN_FOUND )
 endif( ENABLE_SN)
+
+if( ENABLE_RSVG )
+  if( RSVG_FOUND )
+    add_definitions( -DHAVE_RSVG )
+  endif( RSVG_FOUND )
+endif( ENABLE_RSVG )
 
 if( ENABLE_BATTERY )
   set( SOURCES ${SOURCES} src/battery/battery.c )
@@ -95,7 +105,8 @@ link_directories( ${X11_LIBRARY_DIRS}
                   ${GLIB2_LIBRARY_DIRS}
                   ${GOBJECT2_LIBRARY_DIRS}
                   ${IMLIB2_LIBRARY_DIRS}
-		  ${SN_LIBRARY_DIRS} )
+                  ${SN_LIBRARY_DIRS}
+                  ${RSVG_LIBRARY_DIRS} )
 add_executable(tint2 ${SOURCES})
 target_link_libraries( tint2 ${X11_LIBRARIES}
                              ${PANGOCAIRO_LIBRARIES}
@@ -104,7 +115,8 @@ target_link_libraries( tint2 ${X11_LIBRARIES}
                              ${GLIB2_LIBRARIES}
                              ${GOBJECT2_LIBRARIES}
                              ${IMLIB2_LIBRARIES}
-			     ${SN_LIBRARIES} )
+			                 ${SN_LIBRARIES}
+                             ${RSVG_LIBRARIES} )
 if( RT_LIBRARY )
   target_link_libraries( tint2 ${RT_LIBRARY} )
 endif( RT_LIBRARY )
